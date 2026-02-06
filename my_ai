@@ -1,4 +1,6 @@
-app.py
-memory.py
-llm.py
-static/index.html
+assistant/
+   my_ai/          ← folder name changed
+       app.py
+       memory.py
+       llm.py
+       static/
