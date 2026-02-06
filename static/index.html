@@ -2,60 +2,35 @@
 <html>
 <head>
 <style>
-body{
- background:#0e0e10;
- color:#eaeaea;
- font-family:system-ui;
- margin:20px;
-}
-#chat{
- height:70vh;
- overflow:auto;
- background:#151518;
- padding:10px;
- border-radius:8px;
-}
-input{
- width:70%;
- background:#1f1f23;
- color:white;
- border:1px solid #333;
- padding:8px;
-}
-button{
- background:#3a3af4;
- color:white;
- border:0;
- padding:8px;
- margin-left:4px;
- cursor:pointer;
-}
+body{background:#0e0e10;color:#eaeaea;font-family:system-ui;margin:20px;}
+#chat{height:70vh;overflow:auto;background:#151518;padding:10px;border-radius:8px;}
+input{width:70%;background:#1f1f23;color:white;border:1px solid #333;padding:8px;}
+button{background:#3a3af4;color:white;border:0;padding:8px;margin-left:4px;cursor:pointer;}
 </style>
 </head>
-
 <body>
 
 <h3>My AI Assistant</h3>
-
 <div id="chat"></div>
-
 <input id="q" placeholder="Type your message...">
 <button onclick="send()">Send</button>
 <button onclick="voice()">🎤 Voice</button>
 
 <script>
-
 async function send(){
  let q = document.getElementById("q").value;
  if(!q) return;
- print("You: " + q);
+ print("You: "+q);
 
- let r = await fetch("/chat?q=" + encodeURIComponent(q),
-                    {method:"POST"});
+ try {
+   let r = await fetch("/chat?q="+encodeURIComponent(q), {method:"POST"});
+   let j = await r.json();
+   print("AI: "+j.answer);
+ } catch(e) {
+   print("Error contacting AI");
+   console.error(e);
+ }
 
- let j = await r.json();
-
- print("AI: " + j.answer);
  document.getElementById("q").value="";
 }
 
@@ -65,19 +40,20 @@ function print(t){
  chat.scrollTop = chat.scrollHeight;
 }
 
-// ---- VOICE ----
+// Voice input
 function voice(){
- let r = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
- r.lang="en-US";
-
- r.onresult = e=>{
-   document.getElementById("q").value = e.results[0][0].transcript;
+ let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+ recognition.lang = "en-US";
+ recognition.onresult = function(event){
+   document.getElementById("q").value = event.results[0][0].transcript;
    send();
  };
-
- r.start();
+ recognition.onerror = function(e){
+   print("Voice recognition error");
+   console.error(e);
+ };
+ recognition.start();
 }
-
 </script>
 
 </body>
