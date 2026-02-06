@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.responses import FileResponse
 from memory import get_relevant, store_memory
 from llm import chat, extract
@@ -11,19 +11,21 @@ def ui():
 
 
 @app.post("/chat")
-def talk(q: str):
+def talk(q: str = Query(..., description="User message")):
+    print("Received question:", q)
 
-    # 1) recall relevant memories
+    # Get relevant memories
     memories = get_relevant(q)
+    print("Retrieved memories:", memories)
 
-    # 2) ask LLM
+    # Get AI response
     answer = chat(q, memories)
 
-    # 3) extract new facts to store
+    # Extract new facts to store
     facts = extract(q, answer)
+    print("Extracted facts:", facts)
 
     for f in facts:
-        if f.strip():
-            store_memory(f)
+        store_memory(f)
 
     return {"answer": answer}
